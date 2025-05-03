@@ -20,7 +20,7 @@ public final class MainView extends Main {
         addClassName(LumoUtility.Padding.MEDIUM);
         add(new ViewToolbar("Main"));
         add(new Div("Please select a view from the menu on the left."));
-        add(new Div("Here will grow a wonderful app."));
+        add(new Div("Here will grow a wonderful app!!!"));
     }
 
     /**
