@@ -36,7 +36,7 @@ jobs:
                   command: |
                       docker build -t vaaddockerreg.azurecr.io/vaaddockerreg:latest .
                       echo $DOCKER_PASS | docker login vaaddockerreg.azurecr.io -u $DOCKER_USER --password-stdin
-                      docker push vaadincrm.azurecr.io/vaadincrm:latest
+                      docker push vaaddockerreg.azurecr.io/vaaddockerreg:latest
 workflows:
     build-test-and-deploy:
         jobs:
