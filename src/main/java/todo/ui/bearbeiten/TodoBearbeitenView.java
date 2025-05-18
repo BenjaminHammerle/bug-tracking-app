@@ -1,4 +1,4 @@
-package todo.ui.erstellen;
+package todo.ui.bearbeiten;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
@@ -8,11 +8,11 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 
-@Route("todo/erstellen")
-@PageTitle("Todo erstellen")
+@Route("todo/bearbeiten")
+@PageTitle("Todo bearbeiten")
 
-public class TodoErstellenView  extends Main {
-       public TodoErstellenView() {
-        add(new H2("Erstellen View"));
+public class TodoBearbeitenView extends Main {
+       public TodoBearbeitenView() {
+        add(new H2("Bearbeiten View"));
     }
 }
