@@ -2,7 +2,6 @@ package com.mci.swe.base.ui.view;
 
 
 import com.mci.swe.security.SecurityService;
-import com.mci.swe.base.ui.view.MainView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
@@ -13,11 +12,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.HighlightConditions;
 import com.vaadin.flow.router.RouterLink;
 import todo.ui.bearbeiten.TodoBearbeitenView;
-import todo.ui.benutzer.TodoBenutzerView;
-import todo.ui.erstellen.TodoErstellenView;
-import todo.ui.liste.TodoListeView;
 
-import javax.swing.text.html.ListView;
 
 public class MainLayout extends AppLayout {
     private final SecurityService securityService;
@@ -51,7 +46,7 @@ public class MainLayout extends AppLayout {
 
         addToDrawer(new VerticalLayout(
                 listLink
-                //new RouterLink("Todo bearbeiten", TodoBearbeitenView.class)
+//                new RouterLink("Todo bearbeiten", TodoBearbeitenView.class)
         ));
     }
 }

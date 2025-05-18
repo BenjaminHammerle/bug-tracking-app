@@ -1,9 +1,6 @@
 package com.mci.swe.security;
 
-
 import java.util.Collections;
-
-
 
 import com.mci.swe.base.ui.view.LoginView;
 import org.springframework.context.annotation.Bean;
@@ -20,11 +17,6 @@ import com.vaadin.flow.spring.security.VaadinWebSecurity;
 @Configuration
 public class SecurityConfig extends VaadinWebSecurity {
 
-    /**
-     * Demo SimpleInMemoryUserDetailsManager, which only provides
-     * two hardcoded in-memory users and their roles.
-     * NOTE: This shouldn't be used in real-world applications.
-     */
     private static class SimpleInMemoryUserDetailsManager extends InMemoryUserDetailsManager {
         public SimpleInMemoryUserDetailsManager() {
             createUser(new User("user",
@@ -40,14 +32,13 @@ public class SecurityConfig extends VaadinWebSecurity {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        // Authorize access to /images/ without authentication
+        // Erlaube Zugriff auf statische Inhalte wie Bilder
         http.authorizeHttpRequests(requests -> requests.requestMatchers("/images/**").permitAll());
-        // Set default security policy that permits Vaadin internal requests and
-        // denies all other
+
+        // Konfiguriere Login-Seite über Pfad, nicht Klasse (vermeidet Paket-Abhängigkeit!)
         super.configure(http);
 
-        setLoginView(http, LoginView.class);
-
+        setLoginView(http, "/login"); // -------------------> setLoginView(http, LoginView .class);
     }
 
     @Bean
@@ -55,3 +46,6 @@ public class SecurityConfig extends VaadinWebSecurity {
         return new SimpleInMemoryUserDetailsManager();
     }
 }
+
+
+
