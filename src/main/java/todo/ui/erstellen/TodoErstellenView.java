@@ -1,5 +1,6 @@
 package todo.ui.erstellen;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
@@ -29,10 +30,11 @@ public class TodoErstellenView  extends Main {
     private final TextField createdAtField = new TextField("Erstellt am");
 
     private final Button saveButton = new Button("Todo erstellen");
+    private final Button returnButton = new Button("Zurück");
     
     
        public TodoErstellenView() {
-          setSizeFull();
+        setSizeFull();
 
     // Überschrift
     H3 header = new H3("Neues Todo erstellen");
@@ -50,12 +52,17 @@ public class TodoErstellenView  extends Main {
     titleField.setWidth("400px");
     createdAtField.setWidth("400px");
     saveButton.setWidth("400px");
+    
+    // Optional: Felder in fester Breite
+    titleField.setWidth("400px");
+    createdAtField.setWidth("400px");
+    returnButton.setWidth("400px");
 
     // Layout mit vertikaler Ausrichtung
     VerticalLayout formLayout = new VerticalLayout();
     formLayout.setDefaultHorizontalComponentAlignment(FlexComponent.Alignment.CENTER);
     formLayout.setSpacing(true);
-    formLayout.add(header, titleField, textField, createdAtField, saveButton);
+    formLayout.add(header, titleField, textField, createdAtField, saveButton, returnButton);
 
     // Gesamtes Layout zentrieren
     VerticalLayout outerLayout = new VerticalLayout(formLayout);
@@ -63,9 +70,10 @@ public class TodoErstellenView  extends Main {
     outerLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
     outerLayout.setAlignItems(FlexComponent.Alignment.CENTER);
 
-            add(outerLayout);
+    add(outerLayout);
 
-        saveButton.addClickListener(e -> saveTodo());
+    saveButton.addClickListener(e -> saveTodo());
+    returnButton.addClickListener(e -> backToOverview());
 
  
     }
@@ -93,5 +101,9 @@ public class TodoErstellenView  extends Main {
         // Formular zurücksetzen
         titleField.clear();
         textField.clear();
+    }
+        
+    private void backToOverview(){
+        UI.getCurrent().navigate("liste"); 
     }
 }
