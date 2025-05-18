@@ -1,78 +1,57 @@
 package com.mci.swe.base.ui.view;
 
-import com.vaadin.flow.component.Component;
+
+import com.mci.swe.security.SecurityService;
+import com.mci.swe.base.ui.view.MainView;
 import com.vaadin.flow.component.applayout.AppLayout;
-import com.vaadin.flow.component.avatar.Avatar;
-import com.vaadin.flow.component.avatar.AvatarVariant;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.menubar.MenuBar;
-import com.vaadin.flow.component.menubar.MenuBarVariant;
-import com.vaadin.flow.component.orderedlayout.Scroller;
-import com.vaadin.flow.component.sidenav.SideNav;
-import com.vaadin.flow.component.sidenav.SideNavItem;
-import com.vaadin.flow.router.Layout;
-import com.vaadin.flow.server.menu.MenuConfiguration;
-import com.vaadin.flow.server.menu.MenuEntry;
+import com.vaadin.flow.component.applayout.DrawerToggle;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.HighlightConditions;
+import com.vaadin.flow.router.RouterLink;
+import todo.ui.bearbeiten.TodoBearbeitenView;
+import todo.ui.benutzer.TodoBenutzerView;
+import todo.ui.erstellen.TodoErstellenView;
+import todo.ui.liste.TodoListeView;
 
-import static com.vaadin.flow.theme.lumo.LumoUtility.*;
+import javax.swing.text.html.ListView;
 
-@Layout
-public final class MainLayout extends AppLayout {
+public class MainLayout extends AppLayout {
+    private final SecurityService securityService;
 
-    MainLayout() {
-        setPrimarySection(Section.DRAWER);
-        addToDrawer(createHeader(), new Scroller(createSideNav()), createUserMenu());
+    public MainLayout(SecurityService securityService) {
+        this.securityService = securityService;
+        createHeader();
+        createDrawer();
     }
 
-    private Div createHeader() {
-        // TODO Replace with real application logo and name
-        var appLogo = VaadinIcon.CUBES.create();
-        appLogo.addClassNames(TextColor.PRIMARY, IconSize.LARGE);
+    private void createHeader() {
+        H1 logo = new H1("Vaadin CRM");
+        logo.addClassNames("text-l", "m-m");
 
-        var appName = new Span("Bug Tracking App");
-        appName.addClassNames(FontWeight.SEMIBOLD, FontSize.LARGE);
+        Button logout = new Button("Log out", e -> securityService.logout());
 
-        var header = new Div(appLogo, appName);
-        header.addClassNames(Display.FLEX, Padding.MEDIUM, Gap.MEDIUM, AlignItems.CENTER);
-        return header;
+        HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), logo, logout);
+
+        header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+        header.expand(logo);
+        header.setWidth("100%");
+        header.addClassNames("py-0", "px-m");
+
+        addToNavbar(header);
+
     }
 
-    private SideNav createSideNav() {
-        var nav = new SideNav();
-        nav.addClassNames(Margin.Horizontal.MEDIUM);
-        MenuConfiguration.getMenuEntries().forEach(entry -> nav.addItem(createSideNavItem(entry)));
-        return nav;
+    private void createDrawer() {
+        RouterLink listLink = new RouterLink("Main", MainView.class);
+        listLink.setHighlightCondition(HighlightConditions.sameLocation());
+
+        addToDrawer(new VerticalLayout(
+                listLink
+                //new RouterLink("Todo bearbeiten", TodoBearbeitenView.class)
+        ));
     }
-
-    private SideNavItem createSideNavItem(MenuEntry menuEntry) {
-        if (menuEntry.icon() != null) {
-            return new SideNavItem(menuEntry.title(), menuEntry.path(), new Icon(menuEntry.icon()));
-        } else {
-            return new SideNavItem(menuEntry.title(), menuEntry.path());
-        }
-    }
-
-    private Component createUserMenu() {
-        // TODO Replace with real user information and actions
-        var avatar = new Avatar("John Smith");
-        avatar.addThemeVariants(AvatarVariant.LUMO_XSMALL);
-        avatar.addClassNames(Margin.Right.SMALL);
-        avatar.setColorIndex(5);
-
-        var userMenu = new MenuBar();
-        userMenu.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
-        userMenu.addClassNames(Margin.MEDIUM);
-
-        var userMenuItem = userMenu.addItem(avatar);
-        userMenuItem.add("John Smith");
-        userMenuItem.getSubMenu().addItem("View Profile");
-        userMenuItem.getSubMenu().addItem("Manage Settings");
-        userMenuItem.getSubMenu().addItem("Logout");
-
-        return userMenu;
-    }
-
 }

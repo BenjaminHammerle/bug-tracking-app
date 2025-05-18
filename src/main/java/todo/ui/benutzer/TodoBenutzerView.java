@@ -18,13 +18,15 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.annotation.security.PermitAll;
 import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
 import todo.models.BenutzerModel;
 import todo.ui.services.BenutzerService;
 
 @Route("benutzer")
 @PageTitle("Benutzer")
-
+@PermitAll
 public class TodoBenutzerView extends Main {
     private final TextField nameField = new TextField("Name");
     private final ComboBox<String> companyField = new ComboBox<>("Firma");

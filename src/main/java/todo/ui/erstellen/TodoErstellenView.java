@@ -18,11 +18,13 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+
+import jakarta.annotation.security.PermitAll;
 import todo.models.TodoModel;
 
 @Route("todo/erstellen")
 @PageTitle("Todo erstellen")
-
+@PermitAll
 public class TodoErstellenView  extends Main {
     
     private final TextField titleField = new TextField("Titel");

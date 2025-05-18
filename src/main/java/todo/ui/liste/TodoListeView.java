@@ -13,12 +13,14 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 import java.time.format.DateTimeFormatter;
+
+import jakarta.annotation.security.PermitAll;
 import todo.models.TodoModel;
 import todo.ui.services.TodoService;
 
 @Route("liste")
 @PageTitle("Overview")
-
+@PermitAll
 public class TodoListeView extends Main {
     private final TextField searchField = new TextField();
     private final Button searchButton = new Button("Suchen");
