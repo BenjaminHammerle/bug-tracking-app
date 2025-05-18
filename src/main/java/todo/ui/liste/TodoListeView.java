@@ -1,18 +1,102 @@
 package todo.ui.liste;
 
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Main;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
+import java.time.format.DateTimeFormatter;
+import todo.models.TodoModel;
+import todo.ui.services.TodoService;
 
 @Route("liste")
 @PageTitle("Overview")
 
 public class TodoListeView extends Main {
-       public TodoListeView() {
-        add(new H2("Übersicht View"));
+    private final TextField searchField = new TextField();
+    private final Button searchButton = new Button("Suchen");
+
+    private final Button addTodoButton = new Button("Neues Todo");
+    private final Button userAdminButton = new Button("Benutzerverwaltung");
+    private final Button logoutButton = new Button("Logout");
+
+    private final Grid<TodoModel> todoGrid = new Grid<>(TodoModel.class, false);
+    private final TodoService todoService = new TodoService(); 
+    
+        public TodoListeView() {
+        setSizeFull();
+
+        // Linke Seite
+        VerticalLayout leftPanel = buildLeftPanel();
+
+        // Rechte Seite
+        VerticalLayout rightPanel = buildRightPanel();
+
+        HorizontalLayout mainLayout = new HorizontalLayout(leftPanel, rightPanel);
+        mainLayout.setSizeFull();
+        mainLayout.setFlexGrow(1, leftPanel);
+        mainLayout.setFlexGrow(2, rightPanel);
+        
+        add(mainLayout); 
     }
+        
+    private VerticalLayout buildLeftPanel() {
+        searchField.setPlaceholder("Suchbegriff...");
+        HorizontalLayout searchLayout = new HorizontalLayout(searchField, searchButton);
+        searchLayout.setWidthFull();
+
+        addTodoButton.setWidthFull();
+        userAdminButton.setWidthFull();
+        logoutButton.setWidthFull();
+
+        VerticalLayout layout = new VerticalLayout(
+                searchLayout,
+                addTodoButton,
+                userAdminButton,
+                logoutButton
+        );
+        layout.setWidth("30%");
+        layout.setSpacing(true);
+
+        // Button-Aktionen
+        addTodoButton.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("todo/erstellen")));
+        userAdminButton.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("benutzer")));
+        logoutButton.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("liste")));
+
+        searchButton.addClickListener(e -> {
+            String keyword = searchField.getValue();
+            todoGrid.setItems(todoService.search(keyword));
+        });
+
+        return layout;
+    }
+    
+     private VerticalLayout buildRightPanel() {
+        todoGrid.addColumn(TodoModel::getTitel).setHeader("Titel");
+        todoGrid.addColumn(TodoModel::getFirma).setHeader("Firma");
+        todoGrid.addColumn(todo -> todo.getErstelltAm().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")))
+                .setHeader("Erstellt am");
+        todoGrid.addColumn(TodoModel::getErstelltVon).setHeader("Erstellt von");
+
+        todoGrid.setItems(todoService.findAll());
+
+        todoGrid.addItemDoubleClickListener(event -> {
+            TodoModel selected = event.getItem();
+            getUI().ifPresent(ui -> ui.navigate("todo/" + selected.getId()));
+        });
+
+        todoGrid.setSizeFull();
+
+        VerticalLayout layout = new VerticalLayout(todoGrid);
+        layout.setSizeFull();
+        return layout;
+    }
+
 }
