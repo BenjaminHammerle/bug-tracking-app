@@ -39,8 +39,8 @@ public class SecurityConfig extends VaadinWebSecurity {
         // Konfiguriere Login-Seite über Pfad, nicht Klasse (vermeidet Paket-Abhängigkeit!)
         super.configure(http);
 
-        //setLoginView(http, "/login");
-        setLoginView(http, LoginView.class);
+
+        setLoginView(http, LoginView.class); //setLoginView(http, "/login");
     }
 
     @Bean
