@@ -1,8 +1,9 @@
-package todo.ui.services;
+package com.mci.swe.services;
 
 import java.util.ArrayList;
 import java.util.List;
-import todo.models.BenutzerModel;
+
+import com.mci.swe.models.BenutzerModel;
 
 
 public class BenutzerService {

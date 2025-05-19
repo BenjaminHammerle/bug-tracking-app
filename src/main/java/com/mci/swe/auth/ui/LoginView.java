@@ -1,4 +1,4 @@
-package com.mci.swe.base.ui.view;
+package com.mci.swe.auth.ui;
 
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.login.LoginForm;

@@ -2,7 +2,8 @@ package com.mci.swe.security;
 
 import java.util.Collections;
 
-import com.mci.swe.base.ui.view.LoginView;
+
+import com.mci.swe.auth.ui.LoginView;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -38,7 +39,8 @@ public class SecurityConfig extends VaadinWebSecurity {
         // Konfiguriere Login-Seite über Pfad, nicht Klasse (vermeidet Paket-Abhängigkeit!)
         super.configure(http);
 
-        setLoginView(http, "/login"); // -------------------> setLoginView(http, LoginView .class);
+        //setLoginView(http, "/login");
+        setLoginView(http, LoginView.class);
     }
 
     @Bean

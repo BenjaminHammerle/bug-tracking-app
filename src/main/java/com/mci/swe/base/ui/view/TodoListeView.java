@@ -1,24 +1,21 @@
-package todo.ui.liste;
+package com.mci.swe.base.ui.view;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Main;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouterLink;
+
 import java.time.format.DateTimeFormatter;
 
 import jakarta.annotation.security.PermitAll;
-import todo.models.TodoModel;
-import todo.ui.services.TodoService;
+import com.mci.swe.models.TodoModel;
+import com.mci.swe.services.TodoService;
 
-@Route("liste")
+@Route(value = "todo-liste", layout = MainLayout.class)
 @PageTitle("Overview")
 @PermitAll
 public class TodoListeView extends Main {

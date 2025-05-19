@@ -1,4 +1,4 @@
-package todo.models;
+package com.mci.swe.models;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;

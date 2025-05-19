@@ -1,30 +1,26 @@
-package todo.ui.benutzer;
+package com.mci.swe.base.ui.view;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Main;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouterLink;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.annotation.security.PermitAll;
-import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
-import todo.models.BenutzerModel;
-import todo.ui.services.BenutzerService;
+import com.mci.swe.models.BenutzerModel;
+import com.mci.swe.services.BenutzerService;
 
-@Route("benutzer")
+@Route(value = "todo-benutzer", layout = MainLayout.class)
 @PageTitle("Benutzer")
 @PermitAll
 public class TodoBenutzerView extends Main {

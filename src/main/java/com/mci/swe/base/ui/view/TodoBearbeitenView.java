@@ -1,12 +1,10 @@
-package todo.ui.bearbeiten;
+package com.mci.swe.base.ui.view;
 
-import com.mci.swe.base.ui.view.MainLayout;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Main;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @Route(value = "todo-bearbeiten", layout = MainLayout.class)
 @PageTitle("Todo bearbeiten")

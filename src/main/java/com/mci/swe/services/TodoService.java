@@ -1,10 +1,10 @@
-package todo.ui.services;
+package com.mci.swe.services;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
-import todo.models.BenutzerModel;
-import todo.models.TodoModel;
+
+import com.mci.swe.models.TodoModel;
 
 /**
  *

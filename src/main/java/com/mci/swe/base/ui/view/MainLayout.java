@@ -11,7 +11,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.HighlightConditions;
 import com.vaadin.flow.router.RouterLink;
-import todo.ui.bearbeiten.TodoBearbeitenView;
 
 
 public class MainLayout extends AppLayout {
@@ -45,8 +44,11 @@ public class MainLayout extends AppLayout {
         listLink.setHighlightCondition(HighlightConditions.sameLocation());
 
         addToDrawer(new VerticalLayout(
-                listLink
-//                new RouterLink("Todo bearbeiten", TodoBearbeitenView.class)
+                listLink,
+                new RouterLink("Todo bearbeiten", TodoBearbeitenView.class),
+                new RouterLink("Todo Benutzer", TodoBenutzerView.class),
+                new RouterLink("Todo erstellen", TodoErstellenView.class),
+                new RouterLink("Todo Liste", TodoListeView.class)
         ));
     }
 }

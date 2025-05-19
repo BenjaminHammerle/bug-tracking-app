@@ -4,6 +4,7 @@ import com.mci.swe.base.ui.component.ViewToolbar;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Main;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
@@ -21,11 +22,7 @@ public final class MainView extends Main {
 
     public MainView() {
         addClassName(LumoUtility.Padding.MEDIUM);
-        add(new ViewToolbar("Main"));
-        add(new Div("Please select a view from the menu on the left."));
-        add(new Div("Here will grow a wonderful app!!!!!!!!!"));
-        add(new Div("Here will grow a wonderful app!!!!!!!!!"));
-        add(new Div("Here will grow a wonderful app!!!!!!!!!!!!!!!"));
+        add(new H2("Main View"));
     }
 
     /**
