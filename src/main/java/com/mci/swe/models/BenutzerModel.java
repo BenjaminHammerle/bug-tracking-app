@@ -1,25 +1,29 @@
 package com.mci.swe.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import java.time.LocalDateTime;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
+
 public class BenutzerModel {
     
     public int id;
-    public String vorname;
     public String nachname;
-    public String firma;
-
-
+    public String vorname;
     public String email;
     public String password;
-    public LocalDateTime erstelltAm;
-    public LocalDateTime bearbeitetAm;
+    public String firma;
     public int istAdmin;
     public int istMitarbeiter;
     public int istKunde;
+    public LocalDateTime erstelltAm;
+    public LocalDateTime bearbeitetAm;
+
+    
+
     
     public BenutzerModel(String nachname, String firma, String email, String password) {
         this.nachname = nachname;
@@ -27,6 +31,64 @@ public class BenutzerModel {
         this.email = email;
         this.password = password;
     }
+    
+        public BenutzerModel(String vorname, String nachname, String email, String password, String firma, int istAdmin, int istMitarbeiter, int istKunde) {
+        this.nachname = nachname;
+        this.vorname = vorname;
+        this.email = email;
+        this.password = password;
+        this.firma = firma;
+        this.istAdmin = istAdmin;
+        this.istMitarbeiter = istMitarbeiter;
+        this.istKunde = istKunde;
+    }
+
+    public BenutzerModel(int id, String nachname, String vorname, String email, String firma, int istAdmin, int istMitarbeiter, int istKunde) {
+        this.id = id;
+        this.nachname = nachname;
+        this.vorname = vorname;
+        this.email = email;
+        this.firma = firma;
+        this.istAdmin = istAdmin;
+        this.istMitarbeiter = istMitarbeiter;
+        this.istKunde = istKunde;
+    }
+
+    public BenutzerModel(int id, String nachname, String vorname, String email, String password, String firma, int istAdmin, int istMitarbeiter, int istKunde) {
+        this.id = id;
+        this.nachname = nachname;
+        this.vorname = vorname;
+        this.email = email;
+        this.password = password;
+        this.firma = firma;
+        this.istAdmin = istAdmin;
+        this.istMitarbeiter = istMitarbeiter;
+        this.istKunde = istKunde;
+    }
+    
+    
+        
+        
+
+    public BenutzerModel(int id,  String nachname, String vorname, String email, String firma) {
+        this.id = id;
+        this.nachname = nachname;
+        this.vorname = vorname;
+        this.email = email;
+        this.firma = firma;
+    }
+
+    public BenutzerModel(String nachname, String vorname, String email, String password, String firma) {
+        this.nachname = nachname;
+        this.vorname = vorname;
+        this.email = email;
+        this.password = password;
+        this.firma = firma;
+    }
+    
+    
+    
+    
 
     public BenutzerModel() {
     }
