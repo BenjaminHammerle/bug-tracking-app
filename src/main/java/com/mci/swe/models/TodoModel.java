@@ -1,5 +1,6 @@
 package com.mci.swe.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -11,16 +12,27 @@ public class TodoModel {
     public String beschreibung;
     public String prio;
     public String status;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     public LocalDateTime erstellt_am;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     public LocalDateTime bearbeitet_am;
-    public String ersteller;
+    public String nachname;
     public String firma;
+
+    public int getOwner_id() {
+        return owner_id;
+    }
+
+    public void setOwner_id(int owner_id) {
+        this.owner_id = owner_id;
+    }
+    public int owner_id;
     
 
     public TodoModel() {
     }
 
-    public TodoModel(int id, String titel, String beschreibung, String prio, String status, LocalDateTime erstellt_am, LocalDateTime bearbeitet_am, String ersteller, String firma) {
+    public TodoModel(int id, String titel, String beschreibung, String prio, String status, LocalDateTime erstellt_am, LocalDateTime bearbeitet_am, String nachname, String firma) {
         this.id = id;
         this.titel = titel;
         this.beschreibung = beschreibung;
@@ -28,9 +40,35 @@ public class TodoModel {
         this.status = status;
         this.erstellt_am = erstellt_am;
         this.bearbeitet_am = bearbeitet_am;
-        this.ersteller = ersteller;
+        this.nachname = nachname;
         this.firma = firma;
     }
+
+    public TodoModel(int id, String titel, String beschreibung, String prio, String status, LocalDateTime erstellt_am, LocalDateTime bearbeitet_am, String nachname) {
+        this.id = id;
+        this.titel = titel;
+        this.beschreibung = beschreibung;
+        this.prio = prio;
+        this.status = status;
+        this.erstellt_am = erstellt_am;
+        this.bearbeitet_am = bearbeitet_am;
+        this.nachname = nachname;
+    }
+
+    public TodoModel(int id, String titel, String beschreibung, String prio, String status, LocalDateTime erstellt_am, LocalDateTime bearbeitet_am, String nachname, String firma, int owner_id) {
+        this.id = id;
+        this.titel = titel;
+        this.beschreibung = beschreibung;
+        this.prio = prio;
+        this.status = status;
+        this.erstellt_am = erstellt_am;
+        this.bearbeitet_am = bearbeitet_am;
+        this.nachname = nachname;
+        this.firma = firma;
+        this.owner_id = owner_id;
+    }
+    
+    
     
     
 
@@ -90,12 +128,12 @@ public class TodoModel {
         this.bearbeitet_am = bearbeitet_am;
     }
 
-    public String getErsteller() {
-        return ersteller;
+    public String getNachname() {
+        return nachname;
     }
 
-    public void setErsteller(String ersteller) {
-        this.ersteller = ersteller;
+    public void setNachname(String nachname) {
+        this.nachname = nachname;
     }
 
     public String getFirma() {

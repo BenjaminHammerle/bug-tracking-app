@@ -104,6 +104,6 @@ public class TodoErstellenView  extends Main {
     }
         
     private void backToOverview(){
-        UI.getCurrent().navigate("liste"); 
+        UI.getCurrent().navigate("todo-liste"); 
     }
 }

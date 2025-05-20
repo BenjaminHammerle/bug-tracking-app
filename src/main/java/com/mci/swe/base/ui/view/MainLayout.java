@@ -40,15 +40,14 @@ public class MainLayout extends AppLayout {
     }
 
     private void createDrawer() {
-        RouterLink listLink = new RouterLink("Main", MainView.class);
+        RouterLink listLink = new RouterLink("Todo Liste", TodoListeView.class);
         listLink.setHighlightCondition(HighlightConditions.sameLocation());
 
         addToDrawer(new VerticalLayout(
                 listLink,
                 new RouterLink("Todo bearbeiten", TodoBearbeitenView.class),
-                new RouterLink("Todo Benutzer", TodoBenutzerView.class),
-                new RouterLink("Todo erstellen", TodoErstellenView.class),
-                new RouterLink("Todo Liste", TodoListeView.class)
+                new RouterLink("Benutzerverwaltung", TodoBenutzerView.class),
+                new RouterLink("Todo erstellen", TodoErstellenView.class)
         ));
     }
 }

@@ -65,7 +65,7 @@ public class TodoListeView extends Main {
         layout.setSpacing(true);
 
         // Button-Aktionen
-        addTodoButton.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("todo/erstellen")));
+        addTodoButton.addClickListener(e ->  todoGrid.setItems(todoService.findAll()));
         userAdminButton.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("benutzer")));
         logoutButton.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("liste")));
 
@@ -78,6 +78,7 @@ public class TodoListeView extends Main {
     }
     
      private VerticalLayout buildRightPanel() {
+        todoGrid.addColumn(TodoModel::getId).setHeader("Nummer");
         todoGrid.addColumn(TodoModel::getTitel).setHeader("Titel");
         todoGrid.addColumn(TodoModel::getFirma).setHeader("Firma");
         todoGrid.addColumn(todo -> todo.getErstellt_am().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")))
