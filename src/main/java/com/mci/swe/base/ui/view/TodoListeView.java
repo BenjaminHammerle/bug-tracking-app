@@ -14,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 import jakarta.annotation.security.PermitAll;
 import com.mci.swe.models.TodoModel;
 import com.mci.swe.services.TodoService;
+import com.vaadin.flow.router.QueryParameters;
 
 @Route(value = "todo-liste", layout = MainLayout.class)
 @PageTitle("Overview")
@@ -87,7 +88,7 @@ public class TodoListeView extends Main {
 
         todoGrid.addItemDoubleClickListener(event -> {
             TodoModel selected = event.getItem();
-            getUI().ifPresent(ui -> ui.navigate("todo/" + selected.getId()));
+            getUI().ifPresent(ui -> ui.navigate("todo-bearbeiten/" + selected.getId()));
         });
 
         todoGrid.setSizeFull();

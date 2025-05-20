@@ -100,6 +100,45 @@ public class TodoService {
               
         return todos;
         }
+        
+        public TodoModel findById(String id) {
+            TodoModel todo = new TodoModel();
+            try {
+            // API-Request vorbereiten
+            URI uri = new URI("https://nx0u5kutgk.execute-api.eu-central-1.amazonaws.com/PROD/Tickets?id=" + id);
+            
+            System.out.println("drin" + uri); 
+            //return null;
+            HttpClient client = HttpClient.newHttpClient();
+            var request = HttpRequest.newBuilder()
+                    .uri(uri)
+                    .GET()
+                    .build();
+
+            // API-Abfrage durchführen
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            System.out.println(response);
+            if (response.statusCode() == 200) {
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
+                mapper.registerModule(new JavaTimeModule());
+
+                // JSON → Array → Liste
+                 // JSON → Einzelnes Objekt
+                //todo = mapper.readValue(response.body(), TodoModel.class);
+                TodoModel[] todoArray = mapper.readValue(response.body(), TodoModel[].class);
+                List<TodoModel> todoModel = List.of(todoArray);
+                todo = todoArray[0];
+            } else {
+                System.out.println("Benutzer erfolgreich aktualisiert!");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+              
+        return todo;
+        }
 
         public List<TodoModel> search(String keyword) {
             return todos.stream()
