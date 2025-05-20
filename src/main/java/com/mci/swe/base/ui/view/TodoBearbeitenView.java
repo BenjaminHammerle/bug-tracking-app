@@ -2,9 +2,11 @@ package com.mci.swe.base.ui.view;
 
 import com.mci.swe.models.TodoModel;
 import com.mci.swe.models.TodoSchrittModel;
+import com.mci.swe.services.SchrittService;
 import com.mci.swe.services.TodoService;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
@@ -35,6 +37,8 @@ public class TodoBearbeitenView extends Main implements HasUrlParameter<String> 
     private final List<TodoSchrittModel> steps = new ArrayList<>();
     private final Grid<TodoSchrittModel> stepGrid = new Grid<>(TodoSchrittModel.class);
     private final TodoService todoService = new TodoService(); 
+    private final SchrittService schrittService = new SchrittService(); 
+    private final ComboBox<String> statusFeld = new ComboBox<>("Status");
 
 
     @Override
@@ -45,6 +49,7 @@ public class TodoBearbeitenView extends Main implements HasUrlParameter<String> 
      
     public TodoBearbeitenView (){
         ticket = loadTicket(para);
+        statusFeld.setItems("OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED");
         setSizeFull();
 
         // Linke Seite: Ticketdetails (readonly)
@@ -67,36 +72,35 @@ public class TodoBearbeitenView extends Main implements HasUrlParameter<String> 
         right.setWidthFull();
         right.setHeightFull();
 
+        stepGrid.setColumns("id", "kommentar", "status_change", "erstelltAm");
         stepGrid.setItems(steps);
         stepGrid.setHeight("300px");
-        stepGrid.addColumn(TodoSchrittModel::getErstelltAm).setHeader("Erstellt am");
-        stepGrid.addColumn(TodoSchrittModel::getAssignee_name).setHeader("Bearbeiter");
-        stepGrid.addColumn(TodoSchrittModel::getStatus_change).setHeader("Status");
-        stepGrid.addColumn(TodoSchrittModel::getKommentar).setHeader("Kommentar");
 
         TextField assigneeNameField = new TextField("Assignee Name");
-        TextField statusChangeField = new TextField("Statusänderung");
+        assigneeNameField.setWidthFull();
+        statusFeld.setWidthFull();
+       
         TextArea kommentarField = new TextArea("Kommentar");
-        kommentarField.setMaxHeight("100px");
+        kommentarField.setMaxHeight("300px");
+        kommentarField.setWidthFull();
 
         Button addButton = new Button("Schritt hinzufügen", e -> {
+            
             TodoSchrittModel step = new TodoSchrittModel();
-            step.id = steps.size() + 1;
-            step.assignee_id = 999; // Beispielwert
-            step.assignee_name = assigneeNameField.getValue();
-            step.status_change = statusChangeField.getValue();
+            step.assignee_id = 26; // Beispielwert
             step.kommentar = kommentarField.getValue();
-            step.erstelltAm = LocalDateTime.now();
+            step.status_change = statusFeld.getValue();
+            schrittService.addSchritt(step,para);
 
             steps.add(step);
             stepGrid.setItems(steps);
 
             assigneeNameField.clear();
-            statusChangeField.clear();
+            statusFeld.clear();
             kommentarField.clear();
         });
 
-        right.add(stepGrid, assigneeNameField, statusChangeField, kommentarField, addButton);
+        right.add(stepGrid, assigneeNameField, statusFeld, kommentarField, addButton);
 
                 HorizontalLayout mainLayout = new HorizontalLayout(left, right);
         mainLayout.setSizeFull();
@@ -113,23 +117,8 @@ public class TodoBearbeitenView extends Main implements HasUrlParameter<String> 
 
     private List<TodoSchrittModel> loadSteps() {
         //Ticketschritte holen
-        TodoSchrittModel s1 = new TodoSchrittModel();
-        s1.id = 1;
-        s1.assignee_id = 2;
-        s1.assignee_name = "Anna Admin";
-        s1.kommentar = "Ticket aufgenommen.";
-        s1.status_change = "OPEN";
-        s1.erstelltAm = LocalDateTime.now().minusHours(5);
-
-        TodoSchrittModel s2 = new TodoSchrittModel();
-        s2.id = 2;
-        s2.assignee_id = 3;
-        s2.assignee_name = "Bob Bearbeiter";
-        s2.kommentar = "Analyse läuft.";
-        s2.status_change = "IN_PROGRESS";
-        s2.erstelltAm = LocalDateTime.now().minusHours(2);
-
-        return List.of(s1, s2);
+       
+        return null;
     }
        
 

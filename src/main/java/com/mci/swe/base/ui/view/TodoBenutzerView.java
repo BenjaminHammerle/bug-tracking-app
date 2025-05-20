@@ -42,7 +42,6 @@ public class TodoBenutzerView extends Main {
     private final Button deleteButton = new Button("Löschen");
 
     private final Grid<BenutzerModel> userGrid = new Grid<>(BenutzerModel.class);
-    private final List<BenutzerModel> userList = new ArrayList<>();
     private final BenutzerService benutzerService = new BenutzerService();
     
     private final Button returnToOverview = new Button("Zurück");
