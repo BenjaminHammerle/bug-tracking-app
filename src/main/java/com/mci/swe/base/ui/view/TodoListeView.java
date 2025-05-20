@@ -80,10 +80,8 @@ public class TodoListeView extends Main {
      private VerticalLayout buildRightPanel() {
         todoGrid.addColumn(TodoModel::getTitel).setHeader("Titel");
         todoGrid.addColumn(TodoModel::getFirma).setHeader("Firma");
-        todoGrid.addColumn(todo -> todo.getErstelltAm().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")))
+        todoGrid.addColumn(todo -> todo.getErstellt_am().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")))
                 .setHeader("Erstellt am");
-        todoGrid.addColumn(TodoModel::getErstelltVon).setHeader("Erstellt von");
-
         todoGrid.setItems(todoService.findAll());
 
         todoGrid.addItemDoubleClickListener(event -> {

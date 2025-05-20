@@ -184,6 +184,7 @@ public class TodoBenutzerView extends Main {
         
     private void clearForm() {
         nameField.clear();
+        vornameField.clear();
         companyField.clear();
         emailField.clear();
         passwordField.clear();

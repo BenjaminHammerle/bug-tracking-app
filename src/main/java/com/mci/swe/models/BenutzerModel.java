@@ -32,7 +32,7 @@ public class BenutzerModel {
         this.password = password;
     }
     
-        public BenutzerModel(String vorname, String nachname, String email, String password, String firma, int istAdmin, int istMitarbeiter, int istKunde) {
+        public BenutzerModel(String nachname, String vorname, String email, String password, String firma, int istAdmin, int istMitarbeiter, int istKunde) {
         this.nachname = nachname;
         this.vorname = vorname;
         this.email = email;
