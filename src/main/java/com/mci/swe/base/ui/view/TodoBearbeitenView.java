@@ -8,10 +8,13 @@ import com.mci.swe.services.TodoService;
 import com.mci.swe.services.BenutzerService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Main;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.router.BeforeEvent;
@@ -29,102 +32,178 @@ import java.util.List;
 @PermitAll
 public class TodoBearbeitenView extends Main implements HasUrlParameter<String> {
 
-    private TodoModel ticket;
-    private String para;
-    private final List<TodoSchrittModel> steps = new ArrayList<>();
-    private final Grid<TodoSchrittModel> stepGrid = new Grid<>(TodoSchrittModel.class);
     private final TodoService todoService = new TodoService();
     private final SchrittService schrittService = new SchrittService();
     private final BenutzerService benutzerService = new BenutzerService();
-    private final ComboBox<String> statusFeld = new ComboBox<>("Status");
+
+    private TodoModel ticket;
+    private String ticketId;
+    private final List<TodoSchrittModel> steps = new ArrayList<>();
+
+    // UI-Komponenten
+    private final FormLayout      ticketForm    = new FormLayout();
+    private final Grid<TodoSchrittModel> stepListGrid  = new Grid<>(TodoSchrittModel.class, false);
+    private final FormLayout      stepDetailForm = new FormLayout();
+    private final ComboBox<BenutzerModel> assigneeCombo = new ComboBox<>("Assignee");
+    private final ComboBox<String>        statusField   = new ComboBox<>("Status");
+    private final TextArea                commentField  = new TextArea("Kommentar");
 
     @Override
     public void setParameter(BeforeEvent event, String parameter) {
-        this.para = parameter;
-        this.ticket = loadTicket(parameter);
+        ticketId = parameter;
+        ticket    = todoService.findById(parameter);
         steps.clear();
-        steps.addAll(loadSteps());
-        initView();
+        steps.addAll(schrittService.getSchritte(parameter));
+        buildLayout();
     }
 
-    private void initView() {
-        statusFeld.setItems("OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED");
-        setSizeFull();
 
-        // Linke Seite
-        VerticalLayout left = new VerticalLayout();
-        left.setWidth("400px");
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        left.add(new Label("ID: " + ticket.getId()));
-        left.add(new Label("Titel: " + ticket.getTitel()));
-        left.add(new Label("Kunde: " + ticket.getFirma()));
-        left.add(new Label("Beschreibung: " + ticket.getBeschreibung()));
-        left.add(new Label("Priorität: " + ticket.getPrio()));
-        left.add(new Label("Status: " + ticket.getStatus()));
-        left.add(new Label("Erstellt am: " + ticket.getErstellt_am().format(formatter)));
-        left.add(new Label("Nachname: " + ticket.getNachname()));
+private void buildLayout() {
+    removeAll();
+    setSizeFull();
 
-        // Rechte Seite
-        VerticalLayout right = new VerticalLayout();
-        right.setWidthFull();
-        right.setHeightFull();
+    // Ticket-Details links
+    buildTicketForm();
+    ticketForm.setWidth("35%");
 
-        // Grid: id, Assignee-Name, Kommentar, Status, erstelltAm
-        stepGrid.removeAllColumns();
-        stepGrid.addColumn(TodoSchrittModel::getId).setHeader("ID");
-        stepGrid.addColumn(TodoSchrittModel::getAssignee_name).setHeader("Assignee");
-        stepGrid.addColumn(TodoSchrittModel::getKommentar).setHeader("Kommentar");
-        stepGrid.addColumn(TodoSchrittModel::getStatus_change).setHeader("Status");
-        stepGrid.addColumn(step -> step.getErstelltAm().format(formatter)).setHeader("Erstellt am");
-        stepGrid.setItems(steps);
-        stepGrid.setHeight("300px");
+    // Schritt-Liste & Detail rechts
+    buildStepListGrid();
+    buildStepDetailForm();
+    VerticalLayout newStepLayout = buildNewStepForm();
 
-        // Assignee Dropdown
-        ComboBox<BenutzerModel> assigneeCombo = new ComboBox<>("Assignee Name");
-        List<BenutzerModel> users = benutzerService.getAllUsers();
-        assigneeCombo.setItems(users);
-        assigneeCombo.setItemLabelGenerator(u -> u.getVorname() + " " + u.getNachname());
-        assigneeCombo.setWidthFull();
+    // links Ticket rechts alles andere
+    SplitLayout mainSplit = new SplitLayout();
+    mainSplit.setSizeFull();
+    mainSplit.addToPrimary(ticketForm);
 
-        statusFeld.setWidthFull();
+    // Rechts Split für Detail und ganz unten das Neue Schritt Formular
+    VerticalLayout right = new VerticalLayout();
+    right.setSizeFull();
+    right.setPadding(false);
+    right.setSpacing(false);
 
-        TextArea kommentarField = new TextArea("Kommentar");
-        kommentarField.setMaxHeight("300px");
-        kommentarField.setWidthFull();
+    SplitLayout rightSplit = new SplitLayout();
+    rightSplit.setSizeFull();
+    rightSplit.addToPrimary(stepListGrid);
+    rightSplit.addToSecondary(stepDetailForm);
+    rightSplit.setSplitterPosition(10);
 
-        Button addButton = new Button("Schritt hinzufügen", e -> {
-            TodoSchrittModel step = new TodoSchrittModel();
-            BenutzerModel selected = assigneeCombo.getValue();
+    right.add(rightSplit, newStepLayout);
+    right.expand(rightSplit);
+
+    mainSplit.addToSecondary(right);
+    mainSplit.setSplitterPosition(35);
+
+    add(mainSplit);
+}
+
+private VerticalLayout buildNewStepForm() {
+    // Felder befüllen
+    statusField.setItems("OPEN","IN_PROGRESS","RESOLVED","CLOSED");
+    statusField.setWidthFull();
+
+    List<BenutzerModel> users = benutzerService.getAllUsers();
+    assigneeCombo.setItems(users);
+    assigneeCombo.setItemLabelGenerator(u -> u.getVorname() + " " + u.getNachname());
+    assigneeCombo.setWidthFull();
+
+    commentField.setWidthFull();
+    commentField.setHeight("120px");
+
+    // Button anlegen
+    Button add = new Button("Neuen Schritt anlegen", ev -> {
+        TodoSchrittModel st = new TodoSchrittModel();
+        BenutzerModel b = assigneeCombo.getValue();
+        if (b != null) {
+            st.setAssignee_id(b.getId());
+            st.setAssignee_name(b.getVorname() + " " + b.getNachname());
+        }
+        st.setStatus_change(statusField.getValue());
+        st.setKommentar(commentField.getValue());
+        schrittService.addSchritt(st, ticketId);
+
+        // Liste aktualisieren
+        steps.clear();
+        steps.addAll(schrittService.getSchritte(ticketId));
+        stepListGrid.getDataProvider().refreshAll();
+
+        // Formular zurücksetzen
+        commentField.clear();
+        assigneeCombo.clear();
+        statusField.clear();
+    });
+
+    // neues Layout mit allen Controls
+    VerticalLayout form = new VerticalLayout(
+        new Span("Neuen Schritt anlegen"), 
+        assigneeCombo,
+        statusField,
+        commentField,
+        add
+    );
+    form.setPadding(true);
+    form.setSpacing(true);
+    form.setWidthFull();
+    return form;
+}
+
+
+    private void buildTicketForm() {
+        ticketForm.removeAll();
+        ticketForm.setResponsiveSteps(
+            new FormLayout.ResponsiveStep("0",   1),
+            new FormLayout.ResponsiveStep("600px",2)
+        );
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        ticketForm.addFormItem(new H2("Ticket #" + ticket.getId()), " ");
+        ticketForm.addFormItem(new Div(new Span(ticket.getTitel())),        "Titel");
+        ticketForm.addFormItem(new Div(new Span(ticket.getFirma())),        "Firma");
+        ticketForm.addFormItem(new Div(new Span(ticket.getBeschreibung())),"Beschreibung");
+        ticketForm.addFormItem(new Div(new Span(ticket.getPrio())),        "Priorität");
+        ticketForm.addFormItem(new Div(new Span(ticket.getStatus())),      "Status");
+        ticketForm.addFormItem(
+            new Div(new Span(ticket.getErstellt_am().format(fmt))),
+            "Erstellt am"
+        );
+    }
+
+    private void buildStepListGrid() {
+        stepListGrid.removeAllColumns();
+        stepListGrid.addColumn(TodoSchrittModel::getId).setHeader("ID").setAutoWidth(true);
+        stepListGrid.setItems(steps);
+        stepListGrid.setHeightFull();
+
+        stepListGrid.asSingleSelect().addValueChangeListener(ev -> {
+            TodoSchrittModel selected = ev.getValue();
             if (selected != null) {
-                step.setAssignee_id(selected.getId());
-                step.setAssignee_name(selected.getVorname() + " " + selected.getNachname());
+                showStepDetails(selected);
+            } else {
+                stepDetailForm.removeAll();
             }
-            step.setKommentar(kommentarField.getValue());
-            step.setStatus_change(statusFeld.getValue());
-            schrittService.addSchritt(step, para);
-
-            steps.clear();
-            steps.addAll(loadSteps());
-            stepGrid.setItems(steps);
-
-            assigneeCombo.clear();
-            statusFeld.clear();
-            kommentarField.clear();
         });
-
-        right.add(stepGrid, assigneeCombo, statusFeld, kommentarField, addButton);
-
-        HorizontalLayout mainLayout = new HorizontalLayout(left, right);
-        mainLayout.setSizeFull();
-        removeAll();
-        add(mainLayout);
     }
 
-    private TodoModel loadTicket(String id) {
-        return todoService.findById(id);
+    private void buildStepDetailForm() {
+        stepDetailForm.removeAll();
+        stepDetailForm.setResponsiveSteps(
+            new FormLayout.ResponsiveStep("0",   1),
+            new FormLayout.ResponsiveStep("600px",2)
+        );
+        // leer initial
     }
 
-    private List<TodoSchrittModel> loadSteps() {
-        return schrittService.getSchritte(para);
+    private void showStepDetails(TodoSchrittModel step) {
+        stepDetailForm.removeAll();
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        stepDetailForm.addFormItem(new H2("Schritt #" + step.getId()), " ");
+        stepDetailForm.addFormItem(new Div(new Span(step.getAssignee_name())), "Assignee");
+        stepDetailForm.addFormItem(new Div(new Span(step.getKommentar())),     "Kommentar");
+        stepDetailForm.addFormItem(new Div(new Span(step.getStatus_change())),"Status");
+        stepDetailForm.addFormItem(
+            new Div(new Span(step.getErstelltAm().format(fmt))),
+            "Erstellt am"
+        );
     }
+
 }
