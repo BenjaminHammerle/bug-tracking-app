@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import com.mci.swe.models.BenutzerModel;
 import com.vaadin.flow.component.notification.Notification;
@@ -21,8 +22,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.stereotype.Service;
 
-
+@Service
 public class BenutzerService {
       public  List<BenutzerModel> users = new ArrayList<>();
 
@@ -118,19 +120,44 @@ public class BenutzerService {
                 .send(request, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() == 204) {
-            System.out.println("✅ Benutzer erfolgreich gelöscht");
+            System.out.println(" Benutzer erfolgreich gelöscht");
              users.remove(user);
         } else if (response.statusCode() == 404) {
             System.out.println("❌ Benutzer nicht gefunden");
         } else {
-            System.out.println("⚠️ Fehler beim Löschen: " + response.statusCode());
+            System.out.println(" Fehler beim Löschen: " + response.statusCode());
             System.out.println("Antwort: " + response.body());
         }
              } catch (Exception e) {
                 e.printStackTrace();
             }
     }
-        
+    public Optional<BenutzerModel> findById(Long id) {
+        String url = "https://nx0u5kutgk.execute-api.eu-central-1.amazonaws.com/PROD/Users/" + id;
+        System.out.println("[BenutzerService] → GET " + url);
+        try {
+            HttpRequest req = HttpRequest.newBuilder()
+                .uri(new URI(url))
+                .header("Accept", "application/json")
+                .GET()
+                .build();
+            HttpResponse<String> resp = HttpClient.newHttpClient()
+                .send(req, HttpResponse.BodyHandlers.ofString());
+    
+            System.out.println("[BenutzerService] ← Status: " + resp.statusCode());
+            System.out.println("[BenutzerService] ← Body:   " + resp.body());
+    
+            if (resp.statusCode() == 200) {
+                ObjectMapper mapper = new ObjectMapper()
+                    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                BenutzerModel user = mapper.readValue(resp.body(), BenutzerModel.class);
+                return Optional.of(user);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
         public void editUser(BenutzerModel benutzer){
                try {
          Map<String, Object> payload = new HashMap<>();

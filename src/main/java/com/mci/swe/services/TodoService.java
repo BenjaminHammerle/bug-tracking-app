@@ -16,9 +16,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
 
 
-
+@Service
 public class TodoService {
     private static final String BASE_URL = "https://nx0u5kutgk.execute-api.eu-central-1.amazonaws.com/PROD/Tickets";
     private final HttpClient client = HttpClient.newHttpClient();

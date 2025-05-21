@@ -1,46 +1,41 @@
 package com.mci.swe.auth.ui;
 
-import com.mci.swe.base.ui.view.MainView;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.login.LoginForm;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.PasswordField;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.*;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-
 @Route("login")
-@PageTitle("Login")
+@PageTitle("Login | Bug Tracker")
 @AnonymousAllowed
 public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
-    private final LoginForm login = new LoginForm();
+    private final LoginForm loginForm = new LoginForm();
 
     public LoginView() {
         setSizeFull();
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
 
-        login.setAction("login");  // <- wichtig! Authentifiziert gegen Spring Security
+        // Der LoginForm schickt per default POST an /login
+        loginForm.setAction("login");
+        loginForm.setForgotPasswordButtonVisible(false);
 
-        add(new H1("Login"), login);
-
-        RouterLink registerLink = new RouterLink("Jetzt registrieren", RegisterView.class);
-        add(registerLink);
+        add(new H1("Login"), loginForm);
     }
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        if (event.getLocation().getQueryParameters().getParameters().containsKey("error")) {
-            login.setError(true);
+        // Zeige Fehlermeldung, wenn "?error" in der URL
+        if (event.getLocation()
+                 .getQueryParameters()
+                 .getParameters()
+                 .containsKey("error")) {
+            loginForm.setError(true);
         }
     }
 }

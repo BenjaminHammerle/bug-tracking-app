@@ -1,11 +1,11 @@
 package com.mci.swe.base.ui.view;
 
 import com.mci.swe.security.SecurityService;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
@@ -41,10 +41,9 @@ public class MainLayout extends AppLayout {
         HorizontalLayout nav = new HorizontalLayout(dashboardLink, listLink, createLink, usersLink);
         nav.setDefaultVerticalComponentAlignment(Alignment.CENTER);
 
-        // Logout-Button
+        // Logout-Button (einziger Listener, ohne logoutLink)
         Button logout = new Button(new Icon(VaadinIcon.SIGN_OUT), e -> {
             securityService.logout();
-            UI.getCurrent().navigate("login");
         });
         logout.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ERROR);
         logout.getStyle().set("color", "white");
@@ -67,9 +66,7 @@ public class MainLayout extends AppLayout {
         Icon i = icon.create();
         i.getStyle().set("margin-right", "0.25rem").set("color", "white");
 
-        // "" als Text, damit target != null
         RouterLink link = new RouterLink("", target);
-        // remove the default text node
         link.getElement().removeAllChildren();
         link.add(i, new Span(text));
 

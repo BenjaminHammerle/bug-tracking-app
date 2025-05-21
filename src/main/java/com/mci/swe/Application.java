@@ -8,7 +8,12 @@ import org.springframework.context.annotation.Bean;
 
 import java.time.Clock;
 
-@SpringBootApplication
+@SpringBootApplication(
+  excludeName = {
+    "org.springframework.boot.autoconfigure.http.client.HttpClientAutoConfiguration",
+    "org.springframework.boot.autoconfigure.web.client.RestClientAutoConfiguration"
+  }
+)
 @Theme("default")
 public class Application implements AppShellConfigurator {
 
