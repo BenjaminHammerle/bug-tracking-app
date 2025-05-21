@@ -48,7 +48,7 @@ public class MainLayout extends AppLayout {
 
         addToDrawer(new VerticalLayout(
                 listLink,
-                new RouterLink("Todo bearbeiten", TodoBearbeitenView.class),
+                //new RouterLink("Todo bearbeiten/:id", TodoBearbeitenView.class),
                 new RouterLink("Benutzerverwaltung", TodoBenutzerView.class),
                 new RouterLink("Todo erstellen", TodoErstellenView.class)
         ));
