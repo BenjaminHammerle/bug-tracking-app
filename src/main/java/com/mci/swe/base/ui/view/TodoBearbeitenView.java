@@ -7,6 +7,7 @@ import com.mci.swe.services.SchrittService;
 import com.mci.swe.services.TodoService;
 import com.mci.swe.services.BenutzerService;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
@@ -58,44 +59,50 @@ public class TodoBearbeitenView extends Main implements HasUrlParameter<String> 
     }
 
 
-private void buildLayout() {
-    removeAll();
-    setSizeFull();
-
-    // Ticket-Details links
-    buildTicketForm();
-    ticketForm.setWidth("35%");
-
-    // Schritt-Liste & Detail rechts
-    buildStepListGrid();
-    buildStepDetailForm();
-    VerticalLayout newStepLayout = buildNewStepForm();
-
-    // links Ticket rechts alles andere
-    SplitLayout mainSplit = new SplitLayout();
-    mainSplit.setSizeFull();
-    mainSplit.addToPrimary(ticketForm);
-
-    // Rechts Split für Detail und ganz unten das Neue Schritt Formular
-    VerticalLayout right = new VerticalLayout();
-    right.setSizeFull();
-    right.setPadding(false);
-    right.setSpacing(false);
-
-    SplitLayout rightSplit = new SplitLayout();
-    rightSplit.setSizeFull();
-    rightSplit.addToPrimary(stepListGrid);
-    rightSplit.addToSecondary(stepDetailForm);
-    rightSplit.setSplitterPosition(10);
-
-    right.add(rightSplit, newStepLayout);
-    right.expand(rightSplit);
-
-    mainSplit.addToSecondary(right);
-    mainSplit.setSplitterPosition(35);
-
-    add(mainSplit);
-}
+    private void buildLayout() {
+        removeAll();
+        setSizeFull();
+    
+        buildTicketForm();
+        // hellgrauer Hintergrund für Ticket
+        ticketForm.getElement().getStyle()
+            .set("background-color", "var(--lumo-contrast-10pct)")
+            .set("padding", "1rem")
+            .set("border-radius", "8px");
+        ticketForm.setWidth("35%");
+    
+        buildStepListGrid();
+        buildStepDetailForm();
+        VerticalLayout newStepLayout = buildNewStepForm();
+        // heller Hintergrund für Neuen Schritt
+        newStepLayout.getElement().getStyle()
+            .set("background-color", "var(--lumo-contrast-5pct)")
+            .set("padding", "1rem")
+            .set("border-radius", "8px");
+    
+        SplitLayout mainSplit = new SplitLayout();
+        mainSplit.setSizeFull();
+        mainSplit.addToPrimary(ticketForm);
+    
+        VerticalLayout right = new VerticalLayout();
+        right.setSizeFull();
+        right.setPadding(false);
+        right.setSpacing(false);
+    
+        SplitLayout rightSplit = new SplitLayout();
+        rightSplit.setSizeFull();
+        rightSplit.addToPrimary(stepListGrid);
+        rightSplit.addToSecondary(stepDetailForm);
+        rightSplit.setSplitterPosition(10);
+    
+        right.add(rightSplit, newStepLayout);
+        right.expand(rightSplit);
+    
+        mainSplit.addToSecondary(right);
+        mainSplit.setSplitterPosition(35);
+    
+        add(mainSplit);
+    }
 
 private VerticalLayout buildNewStepForm() {
     // Felder befüllen
@@ -132,6 +139,7 @@ private VerticalLayout buildNewStepForm() {
         assigneeCombo.clear();
         statusField.clear();
     });
+    add.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
 
     // neues Layout mit allen Controls
     VerticalLayout form = new VerticalLayout(
