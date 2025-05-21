@@ -4,145 +4,112 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.mci.swe.models.BenutzerModel;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.mci.swe.models.TodoModel;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
-/**
- *
- * @author Andreas
- */
 public class TodoService {
-    
-     private  List<TodoModel> todos = new ArrayList<>();
+    private static final String BASE_URL = "https://nx0u5kutgk.execute-api.eu-central-1.amazonaws.com/PROD/Tickets";
+    private final HttpClient client = HttpClient.newHttpClient();
+    private final ObjectMapper mapper = new ObjectMapper()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .registerModule(new JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        public TodoService() {
-        }
-        
-          public void addTodo(TodoModel todo) {
-                try {
+    private final List<TodoModel> todos = new ArrayList<>();
 
-                // JSON-Payload erstellen
-                Map<String, Object> payload = new HashMap<>();
-                payload.put("titel", todo.titel);
-                payload.put("beschreibung", todo.beschreibung);
-                payload.put("owner_id", todo.id);
-                payload.put("prio", todo.prio);
-              
-                // JSON serialisieren
-                ObjectMapper mapper = new ObjectMapper();
-                String json = mapper.writeValueAsString(payload);
+    public void addTodo(TodoModel todo) {
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("titel", todo.getTitel());
+            payload.put("beschreibung", todo.getBeschreibung());
+            payload.put("owner_id", todo.getOwner_id());
+            payload.put("prio", todo.getPrio());
 
-                // HTTP POST-Request
-                URI uri = new URI("https://nx0u5kutgk.execute-api.eu-central-1.amazonaws.com/PROD/Tickets");
-                HttpClient client = HttpClient.newHttpClient();
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(uri)
-                        .header("Content-Type", "application/json")
-                        .POST(HttpRequest.BodyPublishers.ofString(json))
-                        .build();
-
-                // Anfrage senden
-                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-                if (response.statusCode() == 201) {
-                    System.out.println("Tode rfolgreich aktualisiert!");
-                } else {
-                    System.out.println("Benutzer fehler aktualisiert!");
-                    System.out.println(response);
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-
-        public List<TodoModel> findAll() {
-               try {
-            // API-Request vorbereiten
-            URI uri = new URI("https://nx0u5kutgk.execute-api.eu-central-1.amazonaws.com/PROD/Tickets");
-            HttpClient client = HttpClient.newHttpClient();
-            var request = HttpRequest.newBuilder()
-                    .uri(uri)
-                    .GET()
+            String json = mapper.writeValueAsString(payload);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI(BASE_URL))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
 
-            // API-Abfrage durchführen
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            System.out.println(response);
-            if (response.statusCode() == 200) {
-                ObjectMapper mapper = new ObjectMapper();
-                mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
-                mapper.registerModule(new JavaTimeModule());
-
-                // JSON → Array → Liste
-                TodoModel[] todoArray = mapper.readValue(response.body(), TodoModel[].class);
-                List<TodoModel> todoModel = List.of(todoArray);
-                todos = todoModel;
+            if (response.statusCode() == 201) {
+                // Nach erfolgreichem Erstellen Cache aktualisieren
+                findAll();
             } else {
-                System.out.println("Benutzer erfolgreich aktualisiert!");
+                throw new RuntimeException("Fehler beim Erstellen: HTTP " + response.statusCode());
             }
-
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("Error adding todo", e);
         }
-              
-        return todos;
-        }
-        
-        public TodoModel findById(String id) {
-            TodoModel todo = new TodoModel();
-            try {
-            // API-Request vorbereiten
-            URI uri = new URI("https://nx0u5kutgk.execute-api.eu-central-1.amazonaws.com/PROD/Tickets?id=" + id);
-            
-            System.out.println("drin" + uri); 
-            //return null;
-            HttpClient client = HttpClient.newHttpClient();
-            var request = HttpRequest.newBuilder()
-                    .uri(uri)
+    }
+
+    public List<TodoModel> findAll() {
+        List<TodoModel> result = fetchFromApi(BASE_URL);
+        todos.clear();
+        todos.addAll(result);
+        return new ArrayList<>(todos);
+    }
+
+    public List<TodoModel> findFiltered(
+            String status,
+            String prio,
+            Integer ownerId,
+            Integer assigneeId,
+            String firma,
+            String search
+    ) {
+        StringJoiner qs = new StringJoiner("&");
+        if (status != null && !status.isBlank())    qs.add("status="    + status);
+        if (prio != null && !prio.isBlank())        qs.add("prio="      + prio);
+        if (ownerId != null)   qs.add("owner_id="  + ownerId);
+        if (assigneeId != null)qs.add("assignee_id="+ assigneeId);
+        if (firma != null && !firma.isBlank())       qs.add("firma="      + firma);
+        if (search != null && !search.isBlank())     qs.add("search="     + search);
+
+        String url = BASE_URL + (qs.length() > 0 ? "?" + qs.toString() : "");
+        return fetchFromApi(url);
+    }
+
+    public TodoModel findById(String id) {
+        String url = BASE_URL + "?id=" + id;
+        List<TodoModel> list = fetchFromApi(url);
+        return list.isEmpty() ? null : list.get(0);
+    }
+
+    public List<TodoModel> search(String keyword) {
+        return todos.stream()
+            .filter(t -> t.getTitel() != null
+                      && t.getTitel().toLowerCase().contains(keyword.toLowerCase()))
+            .collect(Collectors.toList());
+    }
+
+    private List<TodoModel> fetchFromApi(String url) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI(url))
+                    .header("Accept", "application/json")
                     .GET()
                     .build();
-
-            // API-Abfrage durchführen
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            System.out.println(response);
             if (response.statusCode() == 200) {
-                ObjectMapper mapper = new ObjectMapper();
-                mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
-                mapper.registerModule(new JavaTimeModule());
-
-                // JSON → Array → Liste
-                 // JSON → Einzelnes Objekt
-                //todo = mapper.readValue(response.body(), TodoModel.class);
-                TodoModel[] todoArray = mapper.readValue(response.body(), TodoModel[].class);
-                List<TodoModel> todoModel = List.of(todoArray);
-                todo = todoArray[0];
+                TodoModel[] arr = mapper.readValue(response.body(), TodoModel[].class);
+                return new ArrayList<>(Arrays.asList(arr));
             } else {
-                System.out.println("Benutzer erfolgreich aktualisiert!");
+                throw new RuntimeException("HTTP " + response.statusCode() + " fetching todos");
             }
-
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("Error fetching todos from " + url, e);
         }
-              
-        return todo;
-        }
-
-        public List<TodoModel> search(String keyword) {
-            return todos.stream()
-                    .filter(t -> t.titel.toLowerCase().contains(keyword.toLowerCase()))
-                    .collect(Collectors.toList());
-        }
+    }
 }
