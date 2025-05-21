@@ -4,10 +4,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import java.time.LocalDateTime;
+
 
 public class TodoSchrittModel {
     public int id;
@@ -15,6 +18,7 @@ public class TodoSchrittModel {
     public String assignee_name;
     public String kommentar;
     public String status_change;
+    @JsonProperty("erstellt_am")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     public LocalDateTime erstelltAm;
 
