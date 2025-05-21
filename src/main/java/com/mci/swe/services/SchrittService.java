@@ -26,8 +26,13 @@ public class SchrittService {
                 ObjectMapper mapper = new ObjectMapper();
                 String json = mapper.writeValueAsString(payload);
 
+                // Payload in der Konsole ausgeben
+                System.out.println("=== Request Payload ===");
+                System.out.println(json);
+                System.out.println("=======================");
+
                 // HTTP POST-Request
-                URI uri = new URI("https://nx0u5kutgk.execute-api.eu-central-1.amazonaws.com/PROD/Tickets/" + mainId + "/steps");
+                URI uri = new URI("https://nx0u5kutgk.execute-api.eu-central-1.amazonaws.com/PROD/Tickets/" + mainId);
                 HttpClient client = HttpClient.newHttpClient();
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(uri)
@@ -38,8 +43,15 @@ public class SchrittService {
                 // Anfrage senden
                 HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-                if (response.statusCode() == 201) {
-                    System.out.println("Schritt rfolgreich aktualisiert!");
+                // Response in der Konsole ausgeben
+                System.out.println("=== Response ===");
+                System.out.println("Status Code: " + response.statusCode());
+                System.out.println("Body:");
+                System.out.println(response.body());
+                System.out.println("================");
+
+                if (response.statusCode() == 200) {
+                    System.out.println("Schritt erfolgreich aktualisiert!");
                 } else {
                     System.out.println("Schritt Fehler !");
                     System.out.println(response);
