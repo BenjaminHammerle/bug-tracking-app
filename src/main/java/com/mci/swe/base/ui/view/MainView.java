@@ -13,6 +13,7 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Main;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -30,7 +31,7 @@ public class MainView extends Main {
 
     private final SecurityService securityService;
     private final BenutzerService benutzerService = new BenutzerService();
-    private final TodoService todoService = new TodoService();
+    private final TodoService     todoService     = new TodoService();
 
     public MainView(SecurityService securityService) {
         this.securityService = securityService;
@@ -39,7 +40,7 @@ public class MainView extends Main {
     }
 
     private void buildDashboard() {
-        // --- Hero-Bereich mit starker Begrüßung ---
+        // --- Hero-Bereich ---
         UserDetails user = securityService.getAuthenticatedUser();
         String email = user != null ? user.getUsername() : "";
         Optional<BenutzerModel> optUser = benutzerService.getAllUsers().stream()
@@ -53,51 +54,60 @@ public class MainView extends Main {
         H1 hero = new H1(greeting);
         hero.getStyle()
             .set("font-size", "2.5rem")
-            .set("margin", "1rem 0")
-            .set("color", "#0277bd");   // dunkles Blau
+            .set("margin", "2rem 0 1rem 0")
+            .set("color", "#0277bd")
+            .set("text-align", "center");
         add(hero);
 
-        // --- Zwei Karten: „Meine Tickets“ und „Mir zugewiesen“ ---
+        // --- Karten-Inhalt ---
         int userId = optUser.map(BenutzerModel::getId).orElse(-1);
         List<TodoModel> meineTickets = todoService.findFiltered(null, null, userId, null, null, null);
         List<TodoModel> zugewiesen   = todoService.findFiltered(null, null, null, userId, null, null);
 
         VerticalLayout card1 = createTodoCard("Meine Tickets", meineTickets);
-        VerticalLayout card2 = createTodoCard("Mir zugewiesen", zugewiesen);
+        VerticalLayout card2 = createTodoCard("Mir zugewiesen",   zugewiesen);
 
-        // --- Responsive Flex-Container ---
+        // --- Wrapper für Zentrierung und Padding ---
+        VerticalLayout wrapper = new VerticalLayout();
+        wrapper.setSizeFull();
+        wrapper.getStyle().set("padding", "0 1rem 2rem 1rem");
+        // richtiges Alignment setzen:
+        wrapper.setDefaultHorizontalComponentAlignment(FlexComponent.Alignment.CENTER);
+
+        // --- FlexLayout für die Karten ---
         FlexLayout cards = new FlexLayout(card1, card2);
         cards.setSizeFull();
         cards.setFlexWrap(FlexWrap.WRAP);
+        cards.setJustifyContentMode(FlexComponent.JustifyContentMode.AROUND);
         cards.getStyle()
-            .set("gap", "1rem")
-            .set("padding-bottom", "2rem");
-        add(cards);
+             .set("gap", "1rem")
+             .set("max-width", "1200px")
+             .set("margin", "0 auto");
+
+        wrapper.add(cards);
+        add(wrapper);
     }
 
     private VerticalLayout createTodoCard(String title, List<TodoModel> items) {
-        // Karte
         VerticalLayout card = new VerticalLayout();
         card.getStyle()
             .set("background-color", "#e3f2fd")
             .set("padding", "1rem")
             .set("border-radius", "8px")
             .set("box-shadow", "0 4px 8px rgba(0,0,0,0.05)")
-            .set("flex", "1 1 350px")  // erlaubt, ab 350px zu umbrechen
-            .set("min-width", "280px"); 
+            .set("flex", "1 1 350px")
+            .set("min-width", "280px");
 
-        // Titel
         H3 header = new H3(title);
         header.getStyle()
             .set("margin", "0 0 0.75rem 0")
             .set("color", "#01579b");
 
-        // Grid
         Grid<TodoModel> grid = new Grid<>(TodoModel.class, false);
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
-        grid.addColumn(TodoModel::getId).setHeader("ID").setAutoWidth(true);
-        grid.addColumn(TodoModel::getTitel).setHeader("Titel").setFlexGrow(1);
-        grid.addColumn(TodoModel::getPrio).setHeader("Priorität").setAutoWidth(true);
+        grid.addColumn(TodoModel::getId)   .setHeader("ID")    .setAutoWidth(true);
+        grid.addColumn(TodoModel::getTitel).setHeader("Titel") .setFlexGrow(1);
+        grid.addColumn(TodoModel::getPrio) .setHeader("Priorität").setAutoWidth(true);
         grid.addColumn(TodoModel::getStatus).setHeader("Status").setAutoWidth(true);
         grid.addColumn(t -> t.getErstellt_am().format(fmt))
             .setHeader("Erstellt am").setAutoWidth(true);
@@ -106,7 +116,6 @@ public class MainView extends Main {
         grid.setHeight("250px");
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_COLUMN_BORDERS);
 
-        // Klick in Detail
         grid.asSingleSelect().addValueChangeListener(ev -> {
             if (ev.getValue() != null) {
                 UI.getCurrent().navigate("todo-bearbeiten/" + ev.getValue().getId());
