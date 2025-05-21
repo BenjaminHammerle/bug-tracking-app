@@ -26,7 +26,10 @@ public class MainLayout extends AppLayout {
         H1 logo = new H1("Bug Tracking App");
         logo.addClassNames("text-l", "m-m");
 
-        Button logout = new Button("Log out", e -> securityService.logout());
+        Button logout = new Button("Logout", click -> {
+            securityService.logout();  // siehe deine bestehende SecurityService-Klasse
+        });
+
 
         HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), logo, logout);
 
