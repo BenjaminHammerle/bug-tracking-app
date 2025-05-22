@@ -5,6 +5,7 @@ import com.mci.swe.auth.service.dto.AuthRequest;
 import com.mci.swe.auth.service.dto.AuthResponse;
 import com.mci.swe.security.SecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -22,7 +23,9 @@ import java.util.List;
 public class ApiAuthenticationProvider implements AuthenticationProvider {
 
     private final RestTemplate restTemplate;
-    private final SecurityService securityService;
+    @Lazy
+    @Autowired
+    private SecurityService securityService;
 
     @Autowired
     public ApiAuthenticationProvider(RestTemplate restTemplate,
