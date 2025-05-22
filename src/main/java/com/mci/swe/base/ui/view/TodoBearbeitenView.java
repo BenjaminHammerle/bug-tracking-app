@@ -14,6 +14,7 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Main;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -52,7 +53,7 @@ public class TodoBearbeitenView extends Main implements HasUrlParameter<String> 
     @Override
     public void setParameter(BeforeEvent event, String parameter) {
         ticketId = parameter;
-        ticket    = todoService.findById(parameter);
+        ticket   = todoService.findById(parameter);  // <- liefert jetzt ein TodoModel
         steps.clear();
         steps.addAll(schrittService.getSchritte(parameter));
         buildLayout();
@@ -156,25 +157,60 @@ public class TodoBearbeitenView extends Main implements HasUrlParameter<String> 
 
     private void buildTicketForm() {
         ticketForm.removeAll();
+        
+        // Nur eine Spalte, immer – kein zweispaltiges Layout mehr
         ticketForm.setResponsiveSteps(
-            new FormLayout.ResponsiveStep("0",    1),
-            new FormLayout.ResponsiveStep("600px", 2)
+            new FormLayout.ResponsiveStep("0", 1)
         );
+    
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
+    
+        // Überschrift (ohne Label)
         ticketForm.addFormItem(new H2("Ticket #" + ticket.getId()), " ");
-        ticketForm.addFormItem(new Div(new Span(ticket.getTitel())),          "Titel");
-        ticketForm.addFormItem(new Div(new Span(ticket.getFirma())),          "Firma");
-        ticketForm.addFormItem(new Div(new Span(ticket.getBeschreibung())),   "Beschreibung");
-        // Prio als Badge
-        ticketForm.addFormItem(new Div(createPrioBadge(ticket.getPrio())),    "Priorität");
-        // Status als Badge
-        ticketForm.addFormItem(new Div(createStatusBadge(ticket.getStatus())), "Status");
+    
+        // Untereinander: Titel
+        ticketForm.addFormItem(new Div(new Span(ticket.getTitel())), "Titel");
+    
+        // Firma
+        ticketForm.addFormItem(new Div(new Span(ticket.getFirma())), "Firma");
+    
+        // Priorität
+        ticketForm.addFormItem(
+            new Div(createPrioBadge(ticket.getPrio())),
+            "Priorität"
+        );
+    
+        // Status
+        ticketForm.addFormItem(
+            new Div(createStatusBadge(ticket.getStatus())),
+            "Status"
+        );
+    
+        // Erstellt am
         ticketForm.addFormItem(
             new Div(new Span(ticket.getErstellt_am().format(fmt))),
             "Erstellt am"
         );
+    
+        // Beschreibung (Textarea, damit Zeilenumbrüche sichtbar bleiben)
+        TextArea desc = new TextArea();
+        desc.setValue(ticket.getBeschreibung() != null
+            ? ticket.getBeschreibung()
+            : "");
+        desc.setReadOnly(true);
+        desc.setWidthFull();
+        desc.getStyle().set("min-height", "150px");
+        ticketForm.addFormItem(desc, "Beschreibung");
+    
+        // Styling der Box
+        ticketForm.getElement().getStyle()
+            .set("background-color", "#e0f7fa")
+            .set("padding", "1rem")
+            .set("border-radius", "8px");
+        
+        ticketForm.setWidth("35%");
     }
+    
 
     private void buildStepListGrid() {
         stepListGrid.removeAllColumns();

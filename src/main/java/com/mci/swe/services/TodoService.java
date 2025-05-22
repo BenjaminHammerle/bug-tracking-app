@@ -85,9 +85,30 @@ public class TodoService {
     }
 
     public TodoModel findById(String id) {
-        String url = BASE_URL + "?id=" + id;
-        List<TodoModel> list = fetchFromApi(url);
-        return list.isEmpty() ? null : list.get(0);
+        try {
+            // 1) Nutze /Tickets/{id} statt ?id=
+            URI uri = new URI(BASE_URL + "/" + id);
+    
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(uri)
+                .header("Accept", "application/json")
+                .GET()
+                .build();
+    
+            HttpResponse<String> response =
+                client.send(request, HttpResponse.BodyHandlers.ofString());
+    
+            if (response.statusCode() == 200) {
+                // 2) Direkt in ein TodoModel mappen, nicht in ein Array
+                return mapper.readValue(response.body(), TodoModel.class);
+            } else {
+                throw new RuntimeException(
+                    "Fehler beim Laden des Tickets: HTTP " + response.statusCode()
+                );
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching todo by id", e);
+        }
     }
 
     public List<TodoModel> search(String keyword) {
