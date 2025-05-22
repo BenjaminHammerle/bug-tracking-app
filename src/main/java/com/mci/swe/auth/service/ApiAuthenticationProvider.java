@@ -15,6 +15,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
@@ -23,72 +24,60 @@ import java.util.List;
 public class ApiAuthenticationProvider implements AuthenticationProvider {
 
     private final RestTemplate restTemplate;
-    @Lazy
     @Autowired
+    @Lazy
     private SecurityService securityService;
 
     @Autowired
-    public ApiAuthenticationProvider(RestTemplate restTemplate,
-                                     SecurityService securityService) {
-        this.restTemplate    = restTemplate;
-        this.securityService = securityService;
+    public ApiAuthenticationProvider(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
 
     @Override
-    public Authentication authenticate(Authentication authentication)
-            throws AuthenticationException {
+public Authentication authenticate(Authentication authentication)
+        throws AuthenticationException {
 
-        String email  = authentication.getName();
-        String rawPwd = authentication.getCredentials().toString();
+    String email  = authentication.getName();
+    String rawPwd = authentication.getCredentials().toString();
 
-        // Header mit JSON-Content-Type
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    AuthRequest authRequest = new AuthRequest(email, rawPwd);
+    HttpEntity<AuthRequest> entity = new HttpEntity<>(authRequest, headers);
 
-        // Body bauen
-        AuthRequest authRequest = new AuthRequest(email, rawPwd);
-        HttpEntity<AuthRequest> entity = new HttpEntity<>(authRequest, headers);
-
-        // API-Aufruf
-        ResponseEntity<AuthResponse> resp = restTemplate.exchange(
+    ResponseEntity<AuthResponse> resp;
+    try {
+        resp = restTemplate.exchange(
             "https://nx0u5kutgk.execute-api.eu-central-1.amazonaws.com/PROD/Auth",
             HttpMethod.GET,
             entity,
             AuthResponse.class
         );
-
-        if (resp.getStatusCode() != HttpStatus.OK
-            || resp.getBody() == null
-            || !resp.getBody().isAuth()) {
-            throw new BadCredentialsException("Ungültige Zugangsdaten");
-        }
-
-        // UserId aus der API-Response
-        Long userId = resp.getBody().getUserId();
-
-        // Optional: in der Vaadin-Session speichern, falls Du das weiterhin möchtest
-        securityService.setLoggedInUserId(userId);
-
-        // Rollen (Authorities)
-        List<GrantedAuthority> authorities = List.of(
-            new SimpleGrantedAuthority("ROLE_USER")
-        );
-
-        // Principal mit unserem eigenen UserDetails
-        ApiUserDetails principal = new ApiUserDetails(
-            email,
-            rawPwd,
-            userId,
-            authorities
-        );
-
-        // Authentication-Token mit Principal
-        return new UsernamePasswordAuthenticationToken(
-            principal,
-            rawPwd,
-            authorities
-        );
+    } catch (HttpClientErrorException.Unauthorized e) {
+        // 401 von der API → BadCredentials für Vaadin
+        throw new BadCredentialsException("Ungültige Zugangsdaten");
     }
+
+    // Falls die API 200 liefert, aber auth=false
+    if (resp.getStatusCode() != HttpStatus.OK
+        || resp.getBody() == null
+        || !resp.getBody().isAuth()) {
+        throw new BadCredentialsException("Ungültige Zugangsdaten");
+    }
+
+    Long userId = resp.getBody().getUserId();
+    securityService.setLoggedInUserId(userId);
+
+    List<GrantedAuthority> authorities = List.of(
+        new SimpleGrantedAuthority("ROLE_USER")
+    );
+    ApiUserDetails principal = new ApiUserDetails(
+        email, rawPwd, userId, authorities
+    );
+    return new UsernamePasswordAuthenticationToken(
+        principal, rawPwd, authorities
+    );
+}
 
     @Override
     public boolean supports(Class<?> authentication) {
