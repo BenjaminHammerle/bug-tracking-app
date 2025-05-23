@@ -20,14 +20,15 @@ import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
+
 import com.vaadin.flow.component.notification.Notification;
 
 import java.util.List;
 
 @Route(value = "todo-benutzer", layout = MainLayout.class)
 @PageTitle("Benutzerverwaltung")
-@PermitAll
+@RolesAllowed("ADMIN")
 public class TodoBenutzerView extends Main {
 
     private final TextField     nameField        = new TextField("Nachname");

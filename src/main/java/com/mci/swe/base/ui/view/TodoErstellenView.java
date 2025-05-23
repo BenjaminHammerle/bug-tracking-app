@@ -68,7 +68,7 @@ public class TodoErstellenView extends Main {
         cancelButton.setWidth("50%");
 
         saveButton.addClickListener(e -> onSave());
-        cancelButton.addClickListener(e -> UI.getCurrent().navigate("todo-liste"));
+        cancelButton.addClickListener(e -> UI.getCurrent().navigate("/"));
     }
 
     private void buildLayout() {
@@ -164,5 +164,8 @@ public class TodoErstellenView extends Main {
         titleField.clear();
         descriptionField.clear();
         prioField.clear();
+
+        // navigiere zurück ins Dashboard
+        UI.getCurrent().navigate("");
     }
 }

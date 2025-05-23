@@ -2,7 +2,6 @@ package com.mci.swe.base.ui.view;
 
 import com.mci.swe.security.SecurityService;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -14,6 +13,8 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.HighlightConditions;
 import com.vaadin.flow.router.RouterLink;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 public class MainLayout extends AppLayout {
 
@@ -38,13 +39,21 @@ public class MainLayout extends AppLayout {
         RouterLink createLink    = createLink(VaadinIcon.PLUS_CIRCLE, "Neues Todo", TodoErstellenView.class);
         RouterLink usersLink     = createLink(VaadinIcon.USERS, "Benutzer", TodoBenutzerView.class);
 
-        HorizontalLayout nav = new HorizontalLayout(dashboardLink, listLink, createLink, usersLink);
+        // Nav-Container aufbauen
+        HorizontalLayout nav = new HorizontalLayout();
         nav.setDefaultVerticalComponentAlignment(Alignment.CENTER);
+        nav.add(dashboardLink, createLink);
 
-        // Logout-Button (einziger Listener, ohne logoutLink)
-        Button logout = new Button(new Icon(VaadinIcon.SIGN_OUT), e -> {
-            securityService.logout();
-        });
+        // Nur für Admins: "Benutzer"-Link dazu
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            nav.add(usersLink);
+            nav.add(listLink);
+        }
+
+        // Logout-Button
+        Button logout = new Button(new Icon(VaadinIcon.SIGN_OUT), e -> securityService.logout());
         logout.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ERROR);
         logout.getStyle().set("color", "white");
 

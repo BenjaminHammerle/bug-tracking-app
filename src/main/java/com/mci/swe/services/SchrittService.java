@@ -16,8 +16,9 @@ import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
+import org.springframework.stereotype.Service;
 
-
+@Service
 public class SchrittService {
 
     

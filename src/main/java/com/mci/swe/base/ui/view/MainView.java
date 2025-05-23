@@ -46,8 +46,10 @@ public class MainView extends VerticalLayout {
     private void buildDashboard() {
         // (1) Principal aus Spring Security holen
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-        // (2) Auf ApiUserDetails casten
+        // (2) Auf ApiUserDetails casten und UserID holen
         Long userId = null;
         if (auth != null && auth.getPrincipal() instanceof ApiUserDetails principal) {
             userId = principal.getUserId();
@@ -72,21 +74,31 @@ public class MainView extends VerticalLayout {
             .set("text-align", "center");
         add(hero);
 
+        // (5) Tickets für die Dashboards
         int id = optUser.map(BenutzerModel::getId).orElse(-1);
         List<TodoModel> meineTickets = 
             todoService.findFiltered(null, null, id, null, null, null);
-        List<TodoModel> zugewiesen   = 
-            todoService.findFiltered(null, null, null, id, null, null);
-
         VerticalLayout card1 = createTodoCard("Meine Tickets", meineTickets);
-        VerticalLayout card2 = createTodoCard("Mir zugewiesen",   zugewiesen);
 
+        VerticalLayout card2 = null;
+        if (isAdmin) {
+            List<TodoModel> zugewiesen = 
+                todoService.findFiltered(null, null, null, id, null, null);
+            card2 = createTodoCard("Mir zugewiesen", zugewiesen);
+        }
+
+        // (6) Layout der Karten
         VerticalLayout wrapper = new VerticalLayout();
         wrapper.setSizeFull();
         wrapper.getStyle().set("padding", "0 1rem 2rem 1rem");
         wrapper.setDefaultHorizontalComponentAlignment(FlexComponent.Alignment.CENTER);
 
-        FlexLayout cards = new FlexLayout(card1, card2);
+        FlexLayout cards;
+        if (card2 != null) {
+            cards = new FlexLayout(card1, card2);
+        } else {
+            cards = new FlexLayout(card1);
+        }
         cards.setSizeFull();
         cards.setFlexWrap(FlexWrap.WRAP);
         cards.setJustifyContentMode(FlexComponent.JustifyContentMode.AROUND);

@@ -4,12 +4,13 @@ import com.mci.swe.auth.service.ApiAuthenticationProvider;
 import com.mci.swe.auth.ui.LoginView;
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
 import org.springframework.context.annotation.Configuration;
-
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(jsr250Enabled = true, securedEnabled = true)
 public class SecurityConfig extends VaadinWebSecurity {
 
     private final ApiAuthenticationProvider apiAuthProvider;
@@ -23,14 +24,19 @@ public class SecurityConfig extends VaadinWebSecurity {
         // 1) Deinen Custom-Provider registrieren
         http.authenticationProvider(apiAuthProvider);
 
-        // 2) Vaadin-spezifische Defaults (CSRF, Static Resources, Login) setzen
+        // 2) Admin-Endpoint schützen (nur ROLE_ADMIN)
+        http.authorizeHttpRequests(authorize -> authorize
+            .requestMatchers("/todo-benutzer/**").hasRole("ADMIN")
+        );
+
+        // 3) Vaadin-spezifische Defaults (CSRF, Static Resources, Login) setzen
         super.configure(http);
 
-        // 3) Dein LoginView verknüpfen
-        setLoginView(http, LoginView.class);
+        http.formLogin(form -> form
+        .defaultSuccessUrl("/", true)
+    );
 
-        // Hinweis: Wenn Du weitere Endpoints freigeben willst,
-        //       kannst Du das entweder per @PermitAll-Annotation am Controller
-        //       oder in einer weiteren configure-Phase machen.
+        // 4) Dein LoginView verknüpfen
+        setLoginView(http, LoginView.class);
     }
 }

@@ -14,7 +14,6 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Main;
-import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -34,9 +33,17 @@ import java.util.List;
 @PermitAll
 public class TodoBearbeitenView extends Main implements HasUrlParameter<String> {
 
-    private final TodoService todoService = new TodoService();
-    private final SchrittService schrittService = new SchrittService();
-    private final BenutzerService benutzerService = new BenutzerService();
+    private final TodoService todoService;
+    private final SchrittService schrittService;
+    private final BenutzerService benutzerService;
+
+    public TodoBearbeitenView(TodoService todoService,
+                              SchrittService schrittService,
+                              BenutzerService benutzerService) {
+        this.todoService      = todoService;
+        this.schrittService   = schrittService;
+        this.benutzerService  = benutzerService;
+    }
 
     private TodoModel ticket;
     private String ticketId;
@@ -191,6 +198,14 @@ public class TodoBearbeitenView extends Main implements HasUrlParameter<String> 
             new Div(new Span(ticket.getErstellt_am().format(fmt))),
             "Erstellt am"
         );
+        ticketForm.addFormItem(
+            new Div(new Span(
+              benutzerService.findById((long) ticket.getOwner_id())
+                .map(u -> u.getVorname() + " " + u.getNachname())
+                .orElse("Unbekannt")
+            )),
+            "Erstellt von"
+          );
     
         // Beschreibung (Textarea, damit Zeilenumbrüche sichtbar bleiben)
         TextArea desc = new TextArea();
