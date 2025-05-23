@@ -182,7 +182,7 @@ public class TodoBenutzerView extends Main {
             }
         });
 
-        returnButton.addClickListener(e -> UI.getCurrent().navigate("liste"));
+        returnButton.addClickListener(e -> UI.getCurrent().navigate(""));
 
         userGrid.asSingleSelect().addValueChangeListener(e -> {
             selectedUser = e.getValue();
