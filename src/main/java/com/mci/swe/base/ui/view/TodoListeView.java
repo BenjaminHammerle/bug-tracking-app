@@ -19,9 +19,10 @@ import jakarta.annotation.security.RolesAllowed;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 @Route(value = "todo-liste", layout = MainLayout.class)
-@PageTitle("Benutzerverwaltung")
+@PageTitle("Todo-Liste")
 @RolesAllowed("ADMIN")
 public class TodoListeView extends Main {
 
@@ -69,7 +70,7 @@ public class TodoListeView extends Main {
         HorizontalLayout buttons = new HorizontalLayout(searchButton, resetButton);
         buttons.setWidthFull();
 
-        // --- Linkes Panel (Filter) im Card-Look ---
+        // --- Linkes Panel (Filter) ---
         VerticalLayout leftPanel = new VerticalLayout(
             statusFilter,
             prioFilter,
@@ -89,19 +90,17 @@ public class TodoListeView extends Main {
             .set("margin",          "0.5rem");
 
         // --- Grid Spalten ---
+        todoGrid.removeAllColumns();
         todoGrid.addColumn(TodoModel::getId)
                 .setHeader("Nummer")
                 .setAutoWidth(true);
-
         todoGrid.addColumn(TodoModel::getTitel)
                 .setHeader("Titel")
                 .setAutoWidth(true);
-
         todoGrid.addColumn(TodoModel::getFirma)
                 .setHeader("Firma")
                 .setAutoWidth(true);
-
-        // Priorität als farbige Badge
+        // Priorität
         todoGrid.addComponentColumn(todo -> {
             Span badge = new Span(todo.getPrio());
             badge.getElement().getThemeList().add("badge");
@@ -111,10 +110,8 @@ public class TodoListeView extends Main {
                 case "HIGH":   badge.getElement().getThemeList().add("error");    break;
             }
             return badge;
-        }).setHeader("Priorität")
-          .setAutoWidth(true);
-
-        // Status als farbige Badge
+        }).setHeader("Priorität").setAutoWidth(true);
+        // Status
         todoGrid.addComponentColumn(todo -> {
             Span badge = new Span(todo.getStatus());
             badge.getElement().getThemeList().add("badge");
@@ -125,21 +122,23 @@ public class TodoListeView extends Main {
                 case "CLOSED":      badge.getElement().getThemeList().add("error");    break;
             }
             return badge;
-        }).setHeader("Status")
-          .setAutoWidth(true);
-
+        }).setHeader("Status").setAutoWidth(true);
+        // Erstellt am
         todoGrid.addColumn(todo ->
-            todo.getErstellt_am()
-                .format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
-        ).setHeader("Erstellt am")
-         .setAutoWidth(true);
+            todo.getErstellt_am().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
+        ).setHeader("Erstellt am").setAutoWidth(true);
+        // Assignee
+        todoGrid.addColumn(todo ->
+            Optional.ofNullable(todo.getAssignee_id())
+                .flatMap(id -> benutzerService.findById(id.longValue()))
+                .map(u -> u.getVorname() + " " + u.getNachname())
+                .orElse("-")
+        ).setHeader("Zugewiesen an").setAutoWidth(true);
 
-        // Gitter konfigurieren
+        // Daten laden und Listener
         todoGrid.setItems(todoService.findAll());
         todoGrid.addItemDoubleClickListener(event ->
-            getUI().ifPresent(ui ->
-                ui.navigate("todo-bearbeiten/" + event.getItem().getId())
-            )
+            getUI().ifPresent(ui -> ui.navigate("todo-bearbeiten/" + event.getItem().getId()))
         );
         todoGrid.setSizeFull();
         todoGrid.addThemeVariants(
@@ -150,15 +149,13 @@ public class TodoListeView extends Main {
             .set("background",    "var(--lumo-contrast-5pct)")
             .set("border-radius", "8px");
 
-        // --- Rechtes Panel (Grid) im Card-Look ---
+        // --- Zusammenbauen ---
         VerticalLayout rightPanel = new VerticalLayout(todoGrid);
         rightPanel.setSizeFull();
         rightPanel.getElement().getStyle()
             .set("background", "#f5fafd")
             .set("padding",    "0.5rem")
             .set("border-radius","8px");
-
-        // --- Zusammensetzen ---
         HorizontalLayout mainLayout = new HorizontalLayout(leftPanel, rightPanel);
         mainLayout.setSizeFull();
         mainLayout.setFlexGrow(1, leftPanel);
@@ -167,13 +164,12 @@ public class TodoListeView extends Main {
     }
 
     private void applyFilters() {
-        String status     = statusFilter.getValue();
-        String prio       = prioFilter.getValue();
-        Integer ownerId   = ownerFilter.getValue()   != null ? ownerFilter.getValue().getId() : null;
-        Integer assigneeId= assigneeFilter.getValue()!= null ? assigneeFilter.getValue().getId(): null;
-        String firma      = firmaFilter.getValue();
-        String search     = searchField.getValue();
-
+        String status      = statusFilter.getValue();
+        String prio        = prioFilter.getValue();
+        Integer ownerId    = ownerFilter.getValue() != null ? ownerFilter.getValue().getId() : null;
+        Integer assigneeId = assigneeFilter.getValue() != null ? assigneeFilter.getValue().getId() : null;
+        String firma       = firmaFilter.getValue();
+        String search      = searchField.getValue();
         todoGrid.setItems(
             todoService.findFiltered(status, prio, ownerId, assigneeId, firma, search)
         );

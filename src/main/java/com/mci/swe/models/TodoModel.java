@@ -1,9 +1,6 @@
 package com.mci.swe.models;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
 import java.time.LocalDateTime;
 
 public class TodoModel {
@@ -18,6 +15,7 @@ public class TodoModel {
     public LocalDateTime bearbeitet_am;
     public String nachname;
     public String firma;
+    private Integer assignee_id;
 
     public int getOwner_id() {
         return owner_id;
@@ -144,4 +142,11 @@ public class TodoModel {
         this.firma = firma;
     }
     
+    public Integer getAssignee_id() {
+        return assignee_id;
+    }
+
+    public void setAssignee_id(Integer assignee_id) {
+        this.assignee_id = assignee_id;
+    }
 }
