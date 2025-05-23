@@ -15,11 +15,12 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Main;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
@@ -29,17 +30,17 @@ import jakarta.annotation.security.PermitAll;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @Route(value = "todo-erstellen", layout = MainLayout.class)
-@PageTitle("Todo erstellen")
+@PageTitle("Neues Todo erstellen")
 @PermitAll
 public class TodoErstellenView extends Main {
 
     private final SecurityService securityService;
     private final BenutzerService benutzerService = new BenutzerService();
-    private final TodoService    todoService       = new TodoService();
+    private final TodoService     todoService       = new TodoService();
 
-    private final TextField      titleField       = new TextField("Titel");
-    private final TextArea       descriptionField = new TextArea("Beschreibung");
-    private final ComboBox<String> prioField      = new ComboBox<>("Priorität");
+    private final TextField        titleField       = new TextField("Titel");
+    private final TextArea         descriptionField = new TextArea("Beschreibung");
+    private final ComboBox<String> prioField        = new ComboBox<>("Priorität");
 
     private final Button saveButton   = new Button("Speichern");
     private final Button cancelButton = new Button("Abbrechen");
@@ -53,53 +54,62 @@ public class TodoErstellenView extends Main {
     }
 
     private void configureFields() {
-        prioField.setItems("LOW", "MEDIUM", "HIGH");
-        titleField.setWidth("400px");
-        descriptionField.setWidth("400px");
+        titleField.setWidthFull();
+        descriptionField.setWidthFull();
         descriptionField.setHeight("150px");
-        prioField.setWidth("400px");
+        prioField.setItems("LOW", "MEDIUM", "HIGH");
+        prioField.setWidthFull();
     }
 
     private void configureButtons() {
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
         cancelButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ERROR);
-
-        saveButton.setWidth("50%");
-        cancelButton.setWidth("50%");
-
+        saveButton.setWidth("120px");
+        cancelButton.setWidth("120px");
         saveButton.addClickListener(e -> onSave());
         cancelButton.addClickListener(e -> UI.getCurrent().navigate("/"));
     }
 
     private void buildLayout() {
-        H3 header = new H3("Neues Todo erstellen");
+        // Card container
+        Div card = new Div();
+        card.getStyle()
+            .set("max-width", "600px")
+            .set("margin", "auto")
+            .set("padding", "2rem")
+            .set("border-radius", "8px")
+            .set("background-color", "#f0f9ff")
+            .set("box-shadow", "0 4px 12px rgba(0,0,0,0.1)");
 
+        // Header
+        H2 header = new H2("Neues Todo erstellen");
+        header.getStyle().set("margin-bottom", "1.5rem");
+        card.add(header);
+
+        // Form
         FormLayout form = new FormLayout();
         form.setResponsiveSteps(
             new FormLayout.ResponsiveStep("0", 1),
-            new FormLayout.ResponsiveStep("600px", 2)
+            new FormLayout.ResponsiveStep("500px", 1)
         );
         form.add(titleField, descriptionField, prioField);
-        form.setWidth("420px");
+        form.setWidthFull();
+        form.getStyle().set("column-gap", "1rem").set("row-gap", "1rem");
+        card.add(form);
 
-        Div buttons = new Div(saveButton, cancelButton);
-        buttons.getStyle()
-               .set("display", "flex")
-               .set("gap", "0.5rem");
-        buttons.setWidth("420px");
+        // Buttons layout
+        HorizontalLayout buttons = new HorizontalLayout(saveButton, cancelButton);
+        buttons.setWidthFull();
+        buttons.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
+        buttons.setSpacing(true);
+        buttons.getStyle().set("margin-top", "1.5rem");
+        card.add(buttons);
 
-        Div card = new Div(header, form, buttons);
-        card.getStyle()
-            .set("background-color", "#e0f7fa")
-            .set("padding", "1rem")
-            .set("border-radius", "8px")
-            .set("box-shadow", "0 2px 6px rgba(0,0,0,0.1)");
-
+        // Outer layout
         VerticalLayout outer = new VerticalLayout(card);
         outer.setSizeFull();
-        outer.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
         outer.setAlignItems(FlexComponent.Alignment.CENTER);
-
+        outer.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
         add(outer);
     }
 
@@ -116,24 +126,18 @@ public class TodoErstellenView extends Main {
             return;
         }
 
-        // Model füllen
         TodoModel todo = new TodoModel();
         todo.setTitel(titel);
         todo.setBeschreibung(beschreibung);
         todo.setPrio(prio);
 
-        // current user ermitteln und owner_id setzen
         UserDetails user = securityService.getAuthenticatedUser();
         String email = user.getUsername();
-        System.out.println("[DEBUG] Angemeldete E-Mail: " + email);
-
         List<BenutzerModel> allUsers = benutzerService.getAllUsers();
         Optional<BenutzerModel> found = allUsers.stream()
             .filter(u -> u.getEmail().equalsIgnoreCase(email))
             .findFirst();
-
         if (found.isEmpty()) {
-            // Fallback: nur lokaler Teil vor '@'
             String prefix = email.contains("@")
                 ? email.substring(0, email.indexOf("@"))
                 : email;
@@ -146,26 +150,18 @@ public class TodoErstellenView extends Main {
                 })
                 .findFirst();
         }
-
         BenutzerModel me = found.orElseThrow(() ->
             new IllegalStateException("Angemeldeter Benutzer nicht gefunden")
         );
-
-        System.out.println("[DEBUG] Gefundener Benutzer: E-Mail=" + me.getEmail() +
-                           " (ID=" + me.getId() + ")");
-
         todo.setOwner_id(me.getId());
 
-        // abschicken
         todoService.addTodo(todo);
-        Notification.show("Todo angelegt!", 2000, Notification.Position.TOP_CENTER);
+        Notification.show("Todo erfolgreich angelegt!", 2000, Notification.Position.TOP_CENTER);
 
-        // Formular zurücksetzen
         titleField.clear();
         descriptionField.clear();
         prioField.clear();
 
-        // navigiere zurück ins Dashboard
         UI.getCurrent().navigate("");
     }
 }
